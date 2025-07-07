@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Mileage Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            max-width: 600px;
+            width: 90%;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .big-button {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            border: none;
+            color: white;
+            padding: 30px 60px;
+            font-size: 2rem;
+            font-weight: bold;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .big-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
+        }
+
+        .form-section {
+            display: none;
+            text-align: left;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+        }
+
+        .voice-status {
+            background: rgba(0, 255, 0, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 2px solid rgba(0, 255, 0, 0.5);
+        }
+
+        .voice-status.listening {
+            background: rgba(255, 165, 0, 0.2);
+            border-color: rgba(255, 165, 0, 0.5);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        .action-button {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .finish-section {
+            display: none;
+        }
+
+        .summary {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .summary h3 {
+            margin-bottom: 15px;
+            color: #ffd700;
+        }
+
+        .summary-item {
+            margin-bottom: 10px;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .error {
+            color: #ff6b6b;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .success {
+            background: rgba(0, 255, 0, 0.2);
+            color: #90EE90;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Landing Page -->
+        <div id="landingPage">
+            <h1>Mileage Tracker</h1>
+            <button class="big-button" onclick="startTrip()">I'm Working</button>
+        </div>
+
+        <!-- Trip Form -->
+        <div id="tripForm" class="form-section">
+            <h2>Trip Details</h2>
+            <div class="voice-status" id="voiceStatus">
+                Ready to start voice input
+            </div>
+            
+            <div class="form-group">
+                <label for="date">Date:</label>
+                <input type="date" id="date" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label for="locationFrom">Location From:</label>
+                <input type="text" id="locationFrom" placeholder="Starting location">
+            </div>
+            
+            <div class="form-group">
+                <label for="locationTo">Location To:</label>
+                <input type="text" id="locationTo" placeholder="Destination">
+            </div>
+            
+            <div class="form-group">
+                <label for="odometerStart">Odometer Reading Start:</label>
+                <input type="number" id="odometerStart" placeholder="Starting mileage">
+            </div>
+            
+            <div class="form-group">
+                <label for="reason">Reason for Journey:</label>
+                <input type="text" id="reason" placeholder="Business meeting, client visit, etc.">
+            </div>
+            
+            <button class="action-button" onclick="startVoiceInput()">Start Voice Input</button>
+            <button class="action-button" onclick="finishTrip()">Finish Trip</button>
+        </div>
+
+        <!-- Finish Trip -->
+        <div id="finishSection" class="finish-section">
+            <h2>Complete Trip</h2>
+            <div class="voice-status" id="voiceStatusFinish">
+                Ready for final details
+            </div>
+            
+            <div class="form-group">
+                <label for="odometerFinish">Odometer Reading Finish:</label>
+                <input type="number" id="odometerFinish" placeholder="Ending mileage">
+            </div>
+            
+            <div class="form-group">
+                <label for="totalMiles">Total Miles Claimed:</label>
+                <input type="number" id="totalMiles" readonly>
+            </div>
+            
+            <button class="action-button" onclick="startFinishVoiceInput()">Voice Input Final Details</button>
+            <button class="action-button" onclick="showSummary()">Complete Trip</button>
+        </div>
+
+        <!-- Summary -->
+        <div id="summary" class="form-section">
+            <h2>Trip Summary</h2>
+            <div class="summary" id="summaryDetails">
+                <!-- Summary will be populated here -->
+            </div>
+            <button class="action-button" onclick="saveTrip()">Save Trip</button>
+            <button class="action-button" onclick="startNewTrip()">Start New Trip</button>
+        </div>
+
+        <!-- Success Message -->
+        <div id="successMessage" class="success" style="display: none;">
+            Trip saved successfully! The data has been stored locally on your device.
+        </div>
+    </div>
+
+    <script>
+        // Trip data object
+        let tripData = {
+            date: '',
+            locationFrom: '',
+            locationTo: '',
+            odometerStart: '',
+            reason: '',
+            odometerFinish: '',
+            totalMiles: 0
+        };
+
+        // Voice recognition variables
+        let recognition;
+        let currentField = '';
+        let isListening = false;
+
+        // Initialize speech recognition
+        function initializeSpeechRecognition() {
+            if ('webkitSpeechRecognition' in window) {
+                recognition = new webkitSpeechRecognition();
+            } else if ('SpeechRecognition' in window) {
+                recognition = new SpeechRecognition();
+            } else {
+                alert('Speech recognition not supported in this browser. Please use Chrome or Edge.');
+                return false;
+            }
+
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                processVoiceInput(transcript);
+            };
+
+            recognition.onerror = function(event) {
+                console.error('Speech recognition error:', event.error);
+                updateVoiceStatus('Error: ' + event.error);
+                isListening = false;
+            };
+
+            recognition.onend = function() {
+                isListening = false;
+                updateVoiceStatus('Voice input completed');
+            };
+
+            return true;
+        }
+
+        // Text-to-speech function
+        function speak(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 0.8;
+                utterance.pitch = 1;
+                speechSynthesis.speak(utterance);
+            }
+        }
+
+        // Start trip
+        function startTrip() {
+            document.getElementById('landingPage').style.display = 'none';
+            document.getElementById('tripForm').style.display = 'block';
+            
+            // Set current date
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('date').value = today;
+            tripData.date = today;
+            
+            if (initializeSpeechRecognition()) {
+                speak('Trip started. Ready for voice input.');
+            }
+        }
+
+        // Start voice input for initial form
+        function startVoiceInput() {
+            if (!recognition) {
+                alert('Speech recognition not available');
+                return;
+            }
+            
+            askNextQuestion();
+        }
+
+        // Ask questions in sequence
+        function askNextQuestion() {
+            const questions = [
+                { field: 'locationFrom', question: 'Where are you starting from?' },
+                { field: 'locationTo', question: 'Where are you going to?' },
+                { field: 'odometerStart', question: 'What is your starting odometer reading?' },
+                { field: 'reason', question: 'What is the reason for this journey?' }
+            ];
+
+            // Find next empty field
+            let nextQuestion = null;
+            for (let q of questions) {
+                if (!tripData[q.field]) {
+                    nextQuestion = q;
+                    break;
+                }
+            }
+
+            if (nextQuestion) {
+                currentField = nextQuestion.field;
+                speak(nextQuestion.question);
+                setTimeout(() => {
+                    startListening();
+                }, 2000);
+            } else {
+                speak('All initial details completed. You can now finish the trip.');
+                updateVoiceStatus('All fields completed. Ready to finish trip.');
+            }
+        }
+
+        // Start listening
+        function startListening() {
+            if (recognition && !isListening) {
+                isListening = true;
+                updateVoiceStatus('Listening...', true);
+                recognition.start();
+            }
+        }
+
+        // Process voice input
+        function processVoiceInput(transcript) {
+            console.log('Heard:', transcript);
+            
+            if (currentField) {
+                tripData[currentField] = transcript;
+                document.getElementById(currentField).value = transcript;
+                updateVoiceStatus(`Recorded: ${transcript}`);
+                
+                speak(`Recorded ${currentField.replace(/([A-Z])/g, ' $1').toLowerCase()}: ${transcript}`);
+                
+                setTimeout(() => {
+                    askNextQuestion();
+                }, 2000);
+            }
+        }
+
+        // Update voice status
+        function updateVoiceStatus(message, listening = false) {
+            const statusElement = document.getElementById('voiceStatus');
+            statusElement.textContent = message;
+            statusElement.className = listening ? 'voice-status listening' : 'voice-status';
+        }
+
+        // Finish trip
+        function finishTrip() {
+            document.getElementById('tripForm').style.display = 'none';
+            document.getElementById('finishSection').style.display = 'block';
+            speak('Ready to complete your trip. Please provide the final details.');
+        }
+
+        // Start voice input for finish section
+        function startFinishVoiceInput() {
+            currentField = 'odometerFinish';
+            speak('What is your ending odometer reading?');
+            setTimeout(() => {
+                startListeningFinish();
+            }, 2000);
+        }
+
+        // Start listening for finish section
+        function startListeningFinish() {
+            if (recognition && !isListening) {
+                isListening = true;
+                const statusElement = document.getElementById('voiceStatusFinish');
+                statusElement.textContent = 'Listening...';
+                statusElement.className = 'voice-status listening';
+                recognition.start();
+                
+                recognition.onresult = function(event) {
+                    const transcript = event.results[0][0].transcript;
+                    const number = parseFloat(transcript.replace(/[^\d.]/g, ''));
+                    
+                    if (!isNaN(number)) {
+                        tripData.odometerFinish = number;
+                        document.getElementById('odometerFinish').value = number;
+                        
+                        // Calculate total miles
+                        const totalMiles = number - parseFloat(tripData.odometerStart);
+                        tripData.totalMiles = totalMiles;
+                        document.getElementById('totalMiles').value = totalMiles;
+                        
+                        statusElement.textContent = `Recorded ending odometer: ${number}`;
+                        statusElement.className = 'voice-status';
+                        
+                        speak(`Recorded ending odometer: ${number}. Total miles: ${totalMiles}`);
+                    }
+                };
+            }
+        }
+
+        // Show summary
+        function showSummary() {
+            // Calculate total miles if not done already
+            if (tripData.odometerFinish && tripData.odometerStart) {
+                tripData.totalMiles = parseFloat(tripData.odometerFinish) - parseFloat(tripData.odometerStart);
+            }
+            
+            document.getElementById('finishSection').style.display = 'none';
+            document.getElementById('summary').style.display = 'block';
+            
+            // Populate summary
+            const summaryHTML = `
+                <h3>Trip Summary</h3>
+                <div class="summary-item"><strong>Date:</strong> ${tripData.date}</div>
+                <div class="summary-item"><strong>From:</strong> ${tripData.locationFrom}</div>
+                <div class="summary-item"><strong>To:</strong> ${tripData.locationTo}</div>
+                <div class="summary-item"><strong>Reason:</strong> ${tripData.reason}</div>
+                <div class="summary-item"><strong>Start Odometer:</strong> ${tripData.odometerStart}</div>
+                <div class="summary-item"><strong>End Odometer:</strong> ${tripData.odometerFinish}</div>
+                <div class="summary-item"><strong>Total Miles:</strong> ${tripData.totalMiles}</div>
+            `;
+            
+            document.getElementById('summaryDetails').innerHTML = summaryHTML;
+            speak('Trip summary ready. You can now save the trip.');
+        }
+
+        // Save trip
+        function saveTrip() {
+            // In a real app, this would save to a database or file
+            // For now, we'll store in memory/localStorage simulation
+            const trips = JSON.parse(localStorage.getItem('mileageTrips') || '[]');
+            trips.push({
+                ...tripData,
+                timestamp: new Date().toISOString()
+            });
+            localStorage.setItem('mileageTrips', JSON.stringify(trips));
+            
+            document.getElementById('summary').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'block';
+            
+            speak('Trip saved successfully.');
+            
+            setTimeout(() => {
+                startNewTrip();
+            }, 3000);
+        }
+
+        // Start new trip
+        function startNewTrip() {
+            // Reset all data
+            tripData = {
+                date: '',
+                locationFrom: '',
+                locationTo: '',
+                odometerStart: '',
+                reason: '',
+                odometerFinish: '',
+                totalMiles: 0
+            };
+            
+            // Reset form
+            document.querySelectorAll('input').forEach(input => {
+                input.value = '';
+            });
+            
+            // Show landing page
+            document.getElementById('successMessage').style.display = 'none';
+            document.getElementById('landingPage').style.display = 'block';
+            
+            speak('Ready for your next trip.');
+        }
+    </script>
+</body>
+</html>
